@@ -1,0 +1,155 @@
+{% extends "base.html" %}
+
+{% block title %}Summary Charts{% endblock %}
+
+{% block header %}Summary Charts{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2 class="text-center">Summary Charts</h2>
+
+    <!-- Error Handling -->
+    {% if error %}
+    <div class="alert alert-danger">
+        {{ error }}
+    </div>
+    {% endif %}
+
+    <!-- Charts Section -->
+    {% if bar_chart and pie_chart %}
+    <div class="row mt-4">
+        <!-- Bar Chart: Subject-wise Quiz Stats -->
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">Subject-wise Quiz Stats</div>
+                <div class="card-body">
+                    <img src="data:image/png;base64,{{ bar_chart }}" class="img-fluid" alt="Bar Chart">
+                </div>
+                <div class="card-footer text-muted">
+                    Subjects and their quiz counts
+                </div>
+            </div>
+        </div>
+
+        <!-- Pie Chart: Quiz Attempt Statistics -->
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">Quiz Score Distribution</div>
+                <div class="card-body">
+                    <img src="data:image/png;base64,{{ pie_chart }}" class="img-fluid" alt="Pie Chart">
+                </div>
+                <div class="card-footer text-muted">
+                    Performance across different quizzes
+                </div>
+            </div>
+        </div>
+    </div>
+    {% else %}
+    <div class="alert alert-info text-center mt-4">
+        <i class="fas fa-chart-bar me-2"></i> No data available to display charts. Add quizzes and complete attempts to see statistics.
+    </div>
+    {% endif %}
+
+    <!-- Admin Dashboard Statistics Section -->
+    <div class="row mt-4">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    Subject-wise User Attempts
+                </div>
+                <div class="card-body">
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>Subject</th>
+                                <th>Total Attempts</th>
+                                <th>Avg. Score</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for subject in subjects %}
+                            <tr>
+                                <td>{{ subject.name }}</td>
+                                <td>{{ subject_attempts[loop.index0] }}</td>
+                                <td>{% if subject_scores[loop.index0] %}{{ subject_scores[loop.index0]|round(2) }}%{% else %}N/A{% endif %}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    Top Scoring Quizzes
+                </div>
+                <div class="card-body">
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>Quiz</th>
+                                <th>Subject</th>
+                                <th>Avg. Score</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for quiz in top_quizzes %}
+                            <tr>
+                                <td>{{ quiz.title }}</td>
+                                <td>{{ quiz.chapter.subject.name }}</td>
+                                <td>{{ quiz_avg_scores[loop.index0]|round(2) }}%</td>
+                            </tr>
+                            {% endfor %}
+                            {% if not top_quizzes %}
+                            <tr>
+                                <td colspan="3" class="text-center">No quiz data available</td>
+                            </tr>
+                            {% endif %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- User Attempt Statistics -->
+    <div class="row mt-4">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-header">
+                    Recent User Activity
+                </div>
+                <div class="card-body">
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>User</th>
+                                <th>Quiz</th>
+                                <th>Date</th>
+                                <th>Score</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for score in recent_scores %}
+                            <tr>
+                                <td>{{ score.user.full_name }}</td>
+                                <td>{{ score.quiz.title }}</td>
+                                <td>{{ score.time_stamp_of_attempt.strftime('%Y-%m-%d') }}</td>
+                                <td>{{ score.total_scored }}</td>
+                            </tr>
+                            {% endfor %}
+                            {% if not recent_scores %}
+                            <tr>
+                                <td colspan="4" class="text-center">No recent activity</td>
+                            </tr>
+                            {% endif %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

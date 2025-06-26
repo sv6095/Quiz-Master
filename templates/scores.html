@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+
+{% block title %}Your Scores{% endblock %}
+
+{% block header %}Your Quiz Scores{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2 class="text-center">Your Quiz Scores</h2>
+
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Quiz Title</th>
+                <th>Date Attempted</th>
+                <th>Score</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for score in quiz_scores %}
+            <tr>
+                <td>{{ score.quiz_id }}</td>
+                <td>{{ score.quiz.title }}</td>
+                <td>{{ score.time_stamp_of_attempt.strftime('%Y-%m-%d') }}</td>
+                <td>{{ score.total_scored }}%</td>
+            </tr>
+            {% endfor %}
+            {% if not quiz_scores %}
+            <tr>
+                <td colspan="4" class="text-center">No quiz attempts yet</td>
+            </tr>
+            {% endif %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

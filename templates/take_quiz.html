@@ -1,0 +1,172 @@
+{% extends "base.html" %}
+
+{% block title %}Take Quiz{% endblock %}
+
+{% block header %}{{ quiz.title }}{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center fade-in">
+    <div class="col-lg-10">
+        <div class="card shadow">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h3 class="mb-0">Question {{ current_question_index + 1 }} of {{ total_questions }}</h3>
+                <div class="timer-container">
+                    <div class="alert alert-info mb-0 d-flex align-items-center">
+                        <i class="fas fa-clock me-2"></i>
+                        <span class="fw-bold me-2">Time Remaining:</span>
+                        <span id="timer" class="fw-bold">Loading...</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="card-body">
+                <form id="quizForm" method="POST" action="{{ url_for('take_quiz', quiz_id=quiz.id) }}">
+                    <!-- Question statement -->
+                    <div class="question-container mb-4">
+                        <div class="card">
+                            <div class="card-body">
+                                <p class="question-statement">{{ current_question.question_statement }}</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Options -->
+                    <div class="options-container mb-4">
+                        <div class="form-check mb-3">
+                            <input class="form-check-input" type="radio" name="answer_{{ current_question.id }}" id="option1" value="1" {% if selected_option == 1 %}checked{% endif %}>
+                            <label class="form-check-label" for="option1">
+                                <span class="option-number">A</span> {{ current_question.option1 }}
+                            </label>
+                        </div>
+                        <div class="form-check mb-3">
+                            <input class="form-check-input" type="radio" name="answer_{{ current_question.id }}" id="option2" value="2" {% if selected_option == 2 %}checked{% endif %}>
+                            <label class="form-check-label" for="option2">
+                                <span class="option-number">B</span> {{ current_question.option2 }}
+                            </label>
+                        </div>
+                        <div class="form-check mb-3">
+                            <input class="form-check-input" type="radio" name="answer_{{ current_question.id }}" id="option3" value="3" {% if selected_option == 3 %}checked{% endif %}>
+                            <label class="form-check-label" for="option3">
+                                <span class="option-number">C</span> {{ current_question.option3 }}
+                            </label>
+                        </div>
+                        <div class="form-check mb-3">
+                            <input class="form-check-input" type="radio" name="answer_{{ current_question.id }}" id="option4" value="4" {% if selected_option == 4 %}checked{% endif %}>
+                            <label class="form-check-label" for="option4">
+                                <span class="option-number">D</span> {{ current_question.option4 }}
+                            </label>
+                        </div>
+                    </div>
+                    
+                    <input type="hidden" name="question_id" value="{{ current_question.id }}">
+                    <input type="hidden" name="current_index" value="{{ current_question_index }}">
+                    <input type="hidden" name="remaining_time" id="remaining_time_input">
+                    
+                    <!-- Navigation buttons -->
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            {% if current_question_index > 0 %}
+                            <button type="submit" name="action" value="previous" class="btn btn-secondary">
+                                <i class="fas fa-arrow-left me-2"></i>Previous
+                            </button>
+                            {% endif %}
+                        </div>
+                        
+                        <div>
+                            <button type="submit" name="action" value="save" class="btn btn-info">
+                                <i class="fas fa-save me-2"></i>Save
+                            </button>
+                            
+                            {% if current_question_index < total_questions - 1 %}
+                            <button type="submit" name="action" value="next" class="btn btn-primary">
+                                Save and Next<i class="fas fa-arrow-right ms-2"></i>
+                            </button>
+                            {% else %}
+                            <button type="submit" name="action" value="submit" formaction="{{ url_for('submit_quiz', quiz_id=quiz.id) }}" class="btn btn-success">
+                                <i class="fas fa-check-circle me-2"></i>Submit
+                            </button>
+                            {% endif %}
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+        
+        <!-- Question Navigation -->
+        <div class="card mt-4">
+            <div class="card-header">
+                <h5 class="mb-0">Question Navigator</h5>
+            </div>
+            <div class="card-body">
+                <div class="question-navigation d-flex flex-wrap gap-2">
+                    {% for i in range(total_questions) %}
+                        <button type="button" class="btn btn-sm {% if i == current_question_index %}btn-primary{% else %}btn-outline-secondary{% endif %}" 
+                                onclick="document.getElementById('current_index').value='{{ i }}'; document.getElementById('quizForm').submit();">
+                            {{ i + 1 }}
+                        </button>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Hidden data for JavaScript -->
+<div id="quiz-data" 
+     data-quiz-id="{{ quiz.id }}" 
+     data-duration="{{ quiz_duration_minutes }}" 
+     data-submit-url="{{ url_for('submit_quiz', quiz_id=quiz.id) }}"
+     {% if session.get('quiz_times', {}).get(quiz.id|string) %}
+     data-server-time="{{ session.get('quiz_times', {}).get(quiz.id|string) }}"
+     {% endif %}
+     style="display: none;">
+</div>
+
+<!-- Include the timer script -->
+<script src="{{ url_for('static', filename='js/quiz_timer.js') }}"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Get data from the hidden div
+        const quizDataElement = document.getElementById('quiz-data');
+        const quizId = quizDataElement.getAttribute('data-quiz-id');
+        const quizDurationMinutes = parseFloat(quizDataElement.getAttribute('data-duration'));
+        const submitUrl = quizDataElement.getAttribute('data-submit-url');
+        const serverSavedTime = quizDataElement.getAttribute('data-server-time');
+        
+        // Initialize the timer
+        const timer = initializeQuizTimer(quizId, quizDurationMinutes, submitUrl);
+        
+        // If there's server-side saved time, update the timer
+        if (serverSavedTime) {
+            sessionStorage.setItem('quiz_' + quizId + '_remaining_time', serverSavedTime);
+        }
+    });
+</script>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    // Add animation to options when selected
+    document.addEventListener('DOMContentLoaded', function() {
+        const radioInputs = document.querySelectorAll('.form-check-input');
+        radioInputs.forEach(input => {
+            input.addEventListener('change', function() {
+                // Remove active class from all options
+                document.querySelectorAll('.form-check').forEach(check => {
+                    check.classList.remove('active');
+                });
+                
+                // Add active class to selected option
+                if (this.checked) {
+                    this.closest('.form-check').classList.add('active');
+                }
+            });
+            
+            // Initialize active state
+            if (input.checked) {
+                input.closest('.form-check').classList.add('active');
+            }
+        });
+    });
+</script>
+{% endblock %}

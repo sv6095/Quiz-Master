@@ -1,0 +1,132 @@
+{% extends "base.html" %}
+
+{% block title %}User Dashboard{% endblock %}
+
+{% block header %}User Dashboard{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <!-- Upcoming Quizzes Section -->
+    <div class="card mb-4">
+        <div class="card-header">
+            <h3>Upcoming Quizzes</h3>
+        </div>
+        <div class="card-body">
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Quiz Title</th>
+                        <th>Subject</th>
+                        <th>Date</th>
+                        <th>Duration</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for quiz in upcoming_quizzes %}
+                    <tr>
+                        <td>{{ quiz.id }}</td>
+                        <td>{{ quiz.title }}</td>
+                        <td>{{ quiz.chapter.subject.name }}</td>
+                        <td>{{ quiz.date_of_quiz }}</td>
+                        <td>{{ quiz.time_duration }} min</td>
+                        <td>
+                            <a href="{{ url_for('take_quiz', quiz_id=quiz.id) }}" class="btn btn-primary btn-sm">Start</a>
+                            <button type="button" class="btn btn-outline-secondary btn-sm" data-bs-toggle="modal" data-bs-target="#viewQuizModal{{ quiz.id }}">
+                                View
+                            </button>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                    {% if not upcoming_quizzes %}
+                    <tr>
+                        <td colspan="6" class="text-center">No upcoming quizzes available</td>
+                    </tr>
+                    {% endif %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Recently Attempted Quizzes -->
+    <div class="card">
+        <div class="card-header">
+            <h3>Recently Attempted Quizzes</h3>
+        </div>
+        <div class="card-body">
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Quiz Title</th>
+                        <th>Subject</th>
+                        <th>Date Attempted</th>
+                        <th>Score</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for score in recent_scores %}
+                    <tr>
+                        <td>{{ score.quiz.id }}</td>
+                        <td>{{ score.quiz.title }}</td>
+                        <td>{{ score.quiz.chapter.subject.name }}</td>
+                        <td>{{ score.time_stamp_of_attempt.strftime('%Y-%m-%d') }}</td>
+                        <td>{{ score.total_scored }}%</td>
+                    </tr>
+                    {% endfor %}
+                    {% if not recent_scores %}
+                    <tr>
+                        <td colspan="5" class="text-center">No quiz attempts yet</td>
+                    </tr>
+                    {% endif %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- View Quiz Modals -->
+{% for quiz in upcoming_quizzes %}
+<div class="modal fade" id="viewQuizModal{{ quiz.id }}" tabindex="-1" aria-labelledby="viewQuizModalLabel{{ quiz.id }}" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="viewQuizModalLabel{{ quiz.id }}">Quiz Details</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="row mb-2">
+                    <div class="col-md-4 fw-bold">ID:</div>
+                    <div class="col-md-8">{{ quiz.id }}</div>
+                </div>
+                <div class="row mb-2">
+                    <div class="col-md-4 fw-bold">Subject:</div>
+                    <div class="col-md-8">{{ quiz.chapter.subject.name }}</div>
+                </div>
+                <div class="row mb-2">
+                    <div class="col-md-4 fw-bold">Chapter:</div>
+                    <div class="col-md-8">{{ quiz.chapter.name }}</div>
+                </div>
+                <div class="row mb-2">
+                    <div class="col-md-4 fw-bold">Questions:</div>
+                    <div class="col-md-8">{{ questions_count[quiz.id] }}</div>
+                </div>
+                <div class="row mb-2">
+                    <div class="col-md-4 fw-bold">Date:</div>
+                    <div class="col-md-8">{{ quiz.date_of_quiz }}</div>
+                </div>
+                <div class="row mb-2">
+                    <div class="col-md-4 fw-bold">Duration:</div>
+                    <div class="col-md-8">{{ quiz.time_duration }} minutes</div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <a href="{{ url_for('take_quiz', quiz_id=quiz.id) }}" class="btn btn-success">Start Quiz</a>
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endfor %}
+{% endblock %}
