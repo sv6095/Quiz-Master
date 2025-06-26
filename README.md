@@ -2,7 +2,7 @@
 
 A modern, responsive web-based quiz management system built with Flask that allows administrators to create subjects, chapters, quizzes, and questions, while users can take quizzes and view their performance.
 
-![Quiz Master](https://via.placeholder.com/800x400?text=Quiz+Master+Application)
+
 
 ## Features
 
@@ -98,11 +98,7 @@ The application includes a timer feature for quizzes that:
 
 ## Screenshots
 
-### Home Page
-![Home Page](https://via.placeholder.com/400x200?text=Home+Page)
 
-### Quiz Page
-![Quiz Page](https://via.placeholder.com/400x200?text=Quiz+Page)
 
 ### Admin Dashboard
 ![Admin Dashboard](https://via.placeholder.com/400x200?text=Admin+Dashboard)
